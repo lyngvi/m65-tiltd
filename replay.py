@@ -46,7 +46,7 @@ def hexdump(prefix_len: int, data: bytes) -> str:
         ret += "\""
     return ret
 
-testFile = os.environ.get('TESTFILE', os.path.join(os.path.dirname(__file__), '../data/m65pro-tilt-controls-2.pcapng'))
+testFile = os.environ.get('TESTFILE', os.path.join(os.path.dirname(__file__), 'data/m65pro-tilt-controls-2.pcapng'))
 matchInput = MatchDefinition('input', [MatchSingleDefinition(0x11, b'\x01\x00\x02\x00\x84')])
 matchOutput = MatchDefinition('output', [MatchSingleDefinition(0x11, b'\x01\x00\x02\x00\x04')])
 matchIface3 = MatchDefinition('iface3', [MatchSingleDefinition(0x11, b'\x01\x00\x02\x00\x03')])
