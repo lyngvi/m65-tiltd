@@ -1,19 +1,19 @@
-SENDRAW=send-raw
-SENDRAW_OBJECTS=send-raw.o replay.o util.o
+ENABLETILT=enable-tilt
+ENABLETILT_OBJECTS=enable-tilt.o replay.o util.o
 
 MONITOR=monitor
 MONITOR_OBJECTS=monitor.o util.o
 
-ALL_TARGETS=$(SENDRAW) $(MONITOR)
-ALL_OBJECTS=$(SENDRAW_OBJECTS) $(MONITOR_OBJECTS)
+ALL_TARGETS=$(ENABLETILT) $(MONITOR)
+ALL_OBJECTS=$(ENABLETILT_OBJECTS) $(MONITOR_OBJECTS)
 
 CFLAGS:=$(shell pkg-config --cflags libusb-1.0)
 LIBS:=$(shell pkg-config --libs libusb-1.0)
 
 all: $(ALL_TARGETS)
 
-$(SENDRAW): $(SENDRAW_OBJECTS)
-	gcc -o $(SENDRAW) $(SENDRAW_OBJECTS) $(LIBS)
+$(ENABLETILT): $(ENABLETILT_OBJECTS)
+	gcc -o $(ENABLETILT) $(ENABLETILT_OBJECTS) $(LIBS)
 
 $(MONITOR): $(MONITOR_OBJECTS)
 	gcc -o $(MONITOR) $(MONITOR_OBJECTS) $(LIBS)

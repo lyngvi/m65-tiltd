@@ -1,5 +1,5 @@
 *.o
-send-raw
+enable-tilt
 monitor
 replay.c
 

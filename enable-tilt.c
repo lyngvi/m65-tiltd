@@ -166,9 +166,9 @@ static uint8_t* const initSequence[] = {
 //    cmd2005,
 //    cmd2009,
 //    cmd2012,
-    cmd2032,
-    cmd2055,
-    cmd2059,
+//    cmd2032,
+//    cmd2055,
+//    cmd2059,
 //    cmd2217,
 //    cmd2253,
 //    cmd2317, cmd2337, cmd2357, cmd2373,
@@ -261,7 +261,7 @@ int main(int argc, char *argv[])
     libusb_context* ctx = NULL;
     int detached = 0;
     int r, s, k;
-    uint8_t* const* sequence = replaySequence;
+    uint8_t* const* sequence = initSequence;
 
     // ensure we can cleanup
     signal(SIGINT, nothing);
@@ -305,8 +305,6 @@ int main(int argc, char *argv[])
         }
         print_hex("Response", response, PACKET_SIZE);
     }
-
-    pause();
 
 bail:
     if ( (s = libusb_release_interface(dev_handle, CORSAIR_SLIPSTREAM_CONTROL_INTERFACE)) < 0)
