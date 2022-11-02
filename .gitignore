@@ -1,0 +1,4 @@
+*.o
+send-raw
+monitor
+
