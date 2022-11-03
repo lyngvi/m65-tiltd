@@ -1,5 +1,7 @@
 Tilt controls 2:
 
+Most notes from m65-tilt-controls-2.pcapng
+
 #define KEY_MEDIA_PREVIOUSSONG 0xea
 #define KEY_MEDIA_NEXTSONG 0xeb
 
@@ -92,3 +94,11 @@ received: : 01 09 00 01     # Forward
 received: : 01 09 00 01 01  # Back
 received: : 01 09 00 01 02  # Left
 received: : 01 09 00 01 03  # Right
+
+
+Additional notes from m65-icue-running-mouse-idle.pcapng:
+
+Every ~24s or so, host => 1.1.4 of
+  1075: \x08\x12; response: 1077: 00 12 00 04
+  1076: \x09\x12; response: 1079: 01 12
+  The host appears to maintain one outstanding interrupt receive urb on endpoint 4.
