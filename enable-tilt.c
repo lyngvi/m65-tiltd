@@ -16,11 +16,35 @@
 
 static int g_Noisy = 0;
 static int g_Term = 0;
+
+enum ControlIndex {
+    CITiltDown,
+    CITiltUp,
+    CITiltLeft,
+    CITiltRight,
+    CIDPIDown,
+    CIDPIUp,
+    CIMetaPlaceholder
+};
+
+enum ButtonIndex {
+    BILeft,
+    BIRight,
+    BICenter,
+    BIForward,
+    BIBack,
+    BIDPIUp,
+    BIDPIDown,
+};
+
+// keycodes to ControlIndex
 static int g_TiltMap[] = {
     KEY_KP2,
     KEY_KP8,
     KEY_KP4,
     KEY_KP6,
+    KEY_KP1,
+    KEY_KP7,
     KEY_LEFTMETA
 };
 
@@ -54,8 +78,10 @@ static const struct command_response_pair initSequence[] = {
     { 0, NULL, 0, NULL }
 };
 
+static uint8_t cmd_maintain_1[PACKET_SIZE] = "\x08\x12";
 static uint8_t cmd_maintain_2[PACKET_SIZE] = "\x09\x12";
 static const struct command_response_pair maintenanceSequence[] = {
+    { sizeof(cmd_maintain_1), cmd_maintain_1, 4, "\x00\x12\x00\x04" },
     { sizeof(cmd_maintain_2), cmd_maintain_2, 2, "\x01\x12" },
     { 0, NULL, 0, NULL },
 };
@@ -159,11 +185,11 @@ static int emit_uinp(int fd, int type, int code, int val)
 
 static void handle_tilt(int uinpfd, int index)
 {
-    emit_uinp(uinpfd, EV_KEY, g_TiltMap[4], 1);
+    emit_uinp(uinpfd, EV_KEY, g_TiltMap[CIMetaPlaceholder], 1);
     emit_uinp(uinpfd, EV_KEY, g_TiltMap[index], 1);
     emit_uinp(uinpfd, EV_SYN, SYN_REPORT, 0);
     emit_uinp(uinpfd, EV_KEY, g_TiltMap[index], 0);
-    emit_uinp(uinpfd, EV_KEY, g_TiltMap[4], 0);
+    emit_uinp(uinpfd, EV_KEY, g_TiltMap[CIMetaPlaceholder], 0);
     emit_uinp(uinpfd, EV_SYN, SYN_REPORT, 0);
     if (g_Noisy)
         printf("Tilt! %d\n", index);
@@ -176,8 +202,17 @@ static void LIBUSB_CALL tilt_io_completion(struct libusb_transfer *transfer)
         int r;
         if (g_Noisy)
             print_hex("received: ", transfer->buffer, transfer->actual_length);
-        if (transfer->actual_length >= 5 && memcmp(transfer->buffer, "\x01\x09\x00\x01", 4) == 0)
-            handle_tilt((int) (intptr_t) transfer->user_data, transfer->buffer[4]);
+        int uinpfd = (int) (intptr_t) transfer->user_data;
+        if (transfer->actual_length >= 5 && memcmp(transfer->buffer, "\x01\x09\x00\x01", 4) == 0) {
+            int tilt_index = CITiltDown + transfer->buffer[4];
+            handle_tilt(uinpfd, tilt_index);
+        } else if (transfer->actual_length >= 3 && memcmp(transfer->buffer, "\x01\x02", 2) == 0) {
+            int button_mask = transfer->buffer[2];
+            if (button_mask & (1 << BIDPIUp))
+                handle_tilt(uinpfd, CIDPIUp);
+            if (button_mask & (1 << BIDPIDown))
+                handle_tilt(uinpfd, CIDPIDown);
+        }
         if ( (r = libusb_submit_transfer(transfer)) < 0) {
             fprintf(stderr, "libusb_submit_transfer: %s\n", libusb_strerror(r));
             g_Term = 2;
