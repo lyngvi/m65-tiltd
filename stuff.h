@@ -14,6 +14,10 @@
 #define CORSAIR_INTERRUPT_TRANSACT_TIMEOUT_S (5)
 
 // in util.c
+// neat hex printout of up to sz bytes of data (stopping when the rest are zeroes)
 void print_hex(const char* label, const uint8_t* data, int sz);
+
+// stuff outp with the amount of time remaining until target, or 0 if we're there
+void time_until(struct timeval* outp, struct timeval* target);
 
 #endif // ndef STUFF_H
