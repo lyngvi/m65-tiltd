@@ -20,4 +20,6 @@ void print_hex(const char* label, const uint8_t* data, int sz);
 // stuff outp with the amount of time remaining until target, or 0 if we're there
 void time_until(struct timeval* outp, struct timeval* target);
 
+extern const char AppVersion[];
+
 #endif // ndef STUFF_H

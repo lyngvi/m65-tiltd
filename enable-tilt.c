@@ -287,6 +287,8 @@ int main(int argc, char *argv[])
     int r, s, k;
     int uinpfd = -1;
 
+    printf("%s %s\n", argv[0], AppVersion);
+
     // ensure we can cleanup
     signal(SIGINT, honorable_discharge);
     signal(SIGTERM, honorable_discharge);
