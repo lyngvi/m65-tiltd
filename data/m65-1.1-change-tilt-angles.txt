@@ -1,3 +1,0 @@
-Mouse is on 1.1 this time
-
-See control packets on 1.1.4 around 27233 - adjusted left tilt 20, 30, 40, 20; adjusted right tilt 20, 30, 40, 20
