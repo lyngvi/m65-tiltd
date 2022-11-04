@@ -1,5 +1,2 @@
 *.o
-enable-tilt
-monitor
-replay.c
-
+m65-tiltd
