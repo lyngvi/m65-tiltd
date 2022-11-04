@@ -1,5 +1,5 @@
 ENABLETILT=enable-tilt
-ENABLETILT_OBJECTS=enable-tilt.o replay.o util.o
+ENABLETILT_OBJECTS=enable-tilt.o util.o
 
 MONITOR=monitor
 MONITOR_OBJECTS=monitor.o util.o

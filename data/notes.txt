@@ -101,4 +101,4 @@ Additional notes from m65-icue-running-mouse-idle.pcapng:
 Every ~24s or so, host => 1.1.4 of
   1075: \x08\x12; response: 1077: 00 12 00 04
   1076: \x09\x12; response: 1079: 01 12
-  The host appears to maintain one outstanding interrupt receive urb on endpoint 4.
+  The host appears to maintain one outstanding interrupt receive urb on endpoint 4; however, as far as the mouse is concerned, these appear to be the same kind of cmd-response transfers
