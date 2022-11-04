@@ -12,6 +12,8 @@
 #define CORSAIR_KICK_THE_MOUSE_S (24) // for some reason, iCue does this, so whatever, we can too
 #define CORSAIR_COMMAND_SUCCESSFUL_1 "\x01\x01"
 
+static int noisy = 0;
+
 static uint8_t cmd1931[PACKET_SIZE] = "\x09\x01\x03\x00\x02"; // Response 1933: 01 01. This appears to be required to stop getting error codes from attempts to use below.
 static uint8_t cmd_set_angle_0[PACKET_SIZE] = "\x09\x01\xb7\x00\x14"; // tilt angles - 0x14 actually maps to 20 degrees, believe it or not
 static uint8_t cmd_set_angle_1[PACKET_SIZE] = "\x09\x01\xb8\x00\x14";
@@ -42,10 +44,8 @@ static const struct command_response_pair initSequence[] = {
     { 0, NULL, 0, NULL }
 };
 
-static uint8_t cmd_maintain_1[PACKET_SIZE] = "\x08\x12";
 static uint8_t cmd_maintain_2[PACKET_SIZE] = "\x09\x12";
 static const struct command_response_pair maintenanceSequence[] = {
-//    { sizeof(cmd_maintain_1), cmd_maintain_1, 4, "\x00\x12\x00\x04" },
     { sizeof(cmd_maintain_2), cmd_maintain_2, 2, "\x01\x12" },
     { 0, NULL, 0, NULL },
 };
@@ -121,16 +121,21 @@ int execute_sequence(libusb_context* ctx, libusb_device_handle* m65ctrl, const s
     for (s = 0; sequence[s].command != NULL; ++s) {
         uint8_t response[PACKET_SIZE] = {};
         int responseSize = sizeof(response);
-        print_hex("Command", sequence[s].command, sequence[s].command_size);
+        if (noisy)
+            print_hex("Command", sequence[s].command, sequence[s].command_size);
         if ( (r = do_interrupt_transact(ctx, m65ctrl, CORSAIR_SLIPSTREAM_CONTROL_ENDPOINT,
                 sequence[s].command, sequence[s].command_size, response, &responseSize)) < 0)
             return r;
-        print_hex("Response", response, responseSize);
+        if (noisy)
+            print_hex("Response", response, responseSize);
         // We'll just treat these as normal conditions - sloppy, but I don't have set expectations yet
-        if (responseSize < sequence[s].response_size)
-            printf("Unexpectedly short response, wanted %d bytes\n", sequence[s].response_size);
-        if (memcmp(response, sequence[s].expected_response, sequence[s].response_size) != 0)
-            print_hex("Response mismatch, expected", sequence[s].expected_response, sequence[s].response_size);
+        int pass = (responseSize >= sequence[s].response_size) && memcmp(response, sequence[s].expected_response, sequence[s].response_size) == 0;
+        if (!pass) {
+            printf("Response mismatch\n");
+            print_hex("command", sequence[s].command, sequence[s].command_size);
+            print_hex("wanted", sequence[s].expected_response, sequence[s].response_size);
+            print_hex("got", response, responseSize);
+        }
     }
     return 0;
 }
@@ -138,7 +143,6 @@ int execute_sequence(libusb_context* ctx, libusb_device_handle* m65ctrl, const s
 int main(int argc, char *argv[])
 {
     libusb_device_handle* dev_handle = NULL;
-    libusb_device* dev;
     libusb_context* ctx = NULL;
     int detached = 0;
     int r, s, k;
@@ -160,7 +164,9 @@ int main(int argc, char *argv[])
         goto bail2;
     }
 
-    detached = libusb_has_capability(LIBUSB_CAP_SUPPORTS_DETACH_KERNEL_DRIVER);
+    detached = libusb_has_capability(LIBUSB_CAP_SUPPORTS_DETACH_KERNEL_DRIVER) &&
+        libusb_kernel_driver_active(dev_handle, CORSAIR_SLIPSTREAM_CONTROL_INTERFACE);
+
     if (detached && (r = libusb_detach_kernel_driver(dev_handle, CORSAIR_SLIPSTREAM_CONTROL_INTERFACE)) < 0) {
         fprintf(stderr, "libusb_detach_kernel_driver: %s\n", libusb_strerror(r));
         r = 0;
@@ -184,6 +190,7 @@ bail:
     if (detached && (s = libusb_attach_kernel_driver(dev_handle, CORSAIR_SLIPSTREAM_CONTROL_INTERFACE)) < 0)
         fprintf(stderr, "libusb_attach_kernel_driver: %s\n", libusb_strerror(s));
     libusb_close(dev_handle);
+
 bail2:
     libusb_exit(ctx);
     return r;
